@@ -11,45 +11,41 @@
  */
 class Solution {
 public:
-    // DFS returns {isBST, minimum, maximum, sum}
-    // We use a struct to keep it clear.
-    struct Info {
+    int ans = 0;
+    struct Info{
         bool isBST;
-        int mn;   // minimum value in this subtree
-        int mx;   // maximum value in this subtree
-        int sum;  // sum of all values in this subtree
+        int minVal;
+        int maxVal;
+        int sum;
     };
-
-    int best = 0;  // global result
-
-    Info dfs(TreeNode* root) {
-        // Null node represents a valid empty "BST".
-        if (!root) return {true, INT_MAX, INT_MIN, 0};
-
-        Info left  = dfs(root->left);
-        Info right = dfs(root->right);
-
-        // Valid BST if both children are BSTs and
-        // root value fits between left's max and right's min.
-        // (BST property: strictly greater than all left, strictly less than all right)
-        if (left.isBST && right.isBST
-            && root->val > left.mx
-            && root->val < right.mn) {
-
-            int sum = root->val + left.sum + right.sum;
-            best = max(best, sum);
-
-            int mn = min(root->val, left.mn);
-            int mx = max(root->val, right.mx);
-            return {true, mn, mx, sum};
+    Info dfs(TreeNode* root){
+        Info curr;
+        if(!root){
+            curr.isBST = true;
+            curr.minVal = INT_MAX;
+            curr.maxVal = INT_MIN;
+            curr.sum = 0;
+            return curr;
         }
-
-        // Not a valid BST; return a marker that can't combine with anything
-        return {false, 0, 0, 0};
+        Info left = dfs(root->left);
+        Info right = dfs(root->right);
+        if(left.isBST && right.isBST && left.maxVal<root->val && right.minVal>root->val){
+            curr.isBST = true;
+            curr.minVal = min(left.minVal, root->val);
+            curr.maxVal = max(right.maxVal, root->val);
+            curr.sum = left.sum + right.sum + root->val;
+            ans = max(ans, curr.sum);
+        }else{
+            curr.isBST = false;
+            curr.sum = 0;
+            curr.minVal = INT_MIN;
+            curr.maxVal = INT_MAX;
+        }
+        return curr;
     }
-
     int maxSumBST(TreeNode* root) {
         dfs(root);
-        return best;
+        return ans;
+        
     }
 };
